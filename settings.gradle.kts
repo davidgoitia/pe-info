@@ -11,4 +11,3 @@ plugins {
 }
 
 rootProject.name = "pe-info"
-include("lib")
