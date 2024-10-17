@@ -9,10 +9,13 @@ name: Gradle Package
 
 on:
   push:
+#    branches:
+#      - main
+#      - release
     tags:
       - 'v*.*.*'  # Se ejecutará cada vez que haya un tag con un número de versión.
-  release:
-    types: [created]
+#  release:
+#    types: [created]
 
 jobs:
   build:
@@ -48,9 +51,15 @@ jobs:
     # The USERNAME and TOKEN need to correspond to the credentials environment variables used in
     # the publishing section of your build.gradle
     - name: Publish to Maven Central
-      run: ./gradlew publish
+      run: ./gradlew jreleaserConfig publish jreleaserFullRelease
       env:
         ORG_GRADLE_PROJECT_signingKey: ${{ secrets.OSSRH_GPG_SECRET_KEY }}
         ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }}
+        JRELEASER_GPG_PUBLIC_KEY: ${{ secrets.OSSHR_GPG_PUBLIC_KEY }}
+        JRELEASER_GPG_SECRET_KEY: ${{ secrets.OSSRH_GPG_SECRET_KEY }}
+        JRELEASER_GPG_PASSPHRASE: ${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }}
         OSS_MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
         OSS_MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
+        JRELEASER_MAVENCENTRAL_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+        JRELEASER_MAVENCENTRAL_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
+        JRELEASER_GITHUB_TOKEN: ${{ secrets.JRELEASER_GITHUB_TOKEN }}

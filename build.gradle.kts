@@ -1,3 +1,4 @@
+import org.jreleaser.model.Active
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -12,13 +13,13 @@ plugins {
     // Apply the java-library plugin for API and implementation separation.
     `java-library`
     `maven-publish`
-    signing
+    id("org.jreleaser") version "1.14.0"
     id("io.freefair.lombok") version "8.10.2"
 }
 
 description = "PE file info extractor"
 group = "es.goitia.pe"
-version = "0.0.1"
+version = "1.0.0"
 var mainClassName = "es.goitia.pe.PEInfo"
 
 repositories {
@@ -54,37 +55,37 @@ publishing {
             from(components["java"])
 
             pom {
-                name.set("PE Info")
-//                description.set("An example of a Gradle project using Kotlin DSL")
-                url.set("https://github.com/davidgoitia/pe-info")
-
+                name = "PE Info"
+                description.set(project.description)
+                url = "https://github.com/davidgoitia/pe-info"
+                inceptionYear = "2024"
                 licenses {
                     license {
-                        name.set("The MIT License")
-                        url.set("https://opensource.org/licenses/MIT")
+                        name = "The MIT License"
+                        url = "https://opensource.org/licenses/MIT"
                     }
                 }
                 developers {
                     developer {
-                        id.set("davidgoitia")
-                        name.set("David Goitia")
-                        email.set("david@goitia.es")
+                        id = "davidgoitia"
+                        name = "David Goitia"
+                        email = "david@goitia.es"
                     }
                 }
                 scm {
-                    connection.set("scm:git:git://github.com/davidgoitia/pe-info.git")
-                    developerConnection.set("scm:git:ssh://github.com/davidgoitia/pe-info.git")
-                    url.set("https://github.com/davidgoitia/pe-info")
+                    connection = "scm:git:git://github.com/davidgoitia/pe-info.git"
+                    developerConnection = "scm:git:ssh://github.com/davidgoitia/pe-info.git"
+                    url = "https://github.com/davidgoitia/pe-info"
                 }
             }
         }
     }
 
     repositories {
-//        maven {
-//            name = "myRepo"
-//            url = uri(layout.buildDirectory.dir("repo"))
-//        }
+        maven {
+            name = "myRepo"
+            url = uri(layout.buildDirectory.dir("staging-deploy"))
+        }
 //        maven {
 //            name = "GitHubPackages"
 //            url = uri("https://maven.pkg.github.com/username/repo")
@@ -93,22 +94,47 @@ publishing {
 //                password = project.findProperty("gpr.token") as String? ?: System.getenv("TOKEN_GITHUB")
 //            }
 //        }
-        maven {
-            name = "OSSRH"
-            url = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
-            credentials {
-                username = System.getenv("OSS_MAVEN_USERNAME")
-                password = System.getenv("OSS_MAVEN_PASSWORD")
-            }
-        }
+//        maven {
+//            name = "OSSRH"
+//            url = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
+//            credentials {
+//                username = System.getenv("OSS_MAVEN_USERNAME")
+//                password = System.getenv("OSS_MAVEN_PASSWORD")
+//            }
+//        }
     }
 }
 
-signing {
-    val signingKey: String? by project
-    val signingPassword: String? by project
-    useInMemoryPgpKeys(signingKey, signingPassword)
-    sign(publishing.publications["mavenJava"])
+jreleaser {
+    project {
+        copyright = "Copyright (c) 2024 David Goitia"
+    }
+    signing {
+        active = Active.ALWAYS
+        armored = true
+    }
+    deploy {
+        maven {
+//            nexus2 {
+//                register("maven-central") {
+//                    active = Active.ALWAYS
+//                    url = "https://s01.oss.sonatype.org/service/local"
+//                    snapshotUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+//                    closeRepository = true
+//                    releaseRepository = true
+//                    stagingRepository("build/staging-deploy")
+//                }
+//            }
+            // Portal Publisher API
+            mavenCentral {
+                register("sonatype") {
+                    active = Active.ALWAYS
+                    url = "https://central.sonatype.com/api/v1/publisher"
+                    stagingRepository("build/staging-deploy")
+                }
+            }
+        }
+    }
 }
 
 tasks.jar {
